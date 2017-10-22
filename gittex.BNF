@@ -47,14 +47,14 @@ Rules:
                     | ε
 
 //kind of like the + symbol in ANTLR
-<inner>    ::= <var_use> <one_or_more>
-              | <head> <one_or_more>
-              | <bold> <one_or_more>
-              | <ul> <one_or_more>
-              | <link> <one_or_more>
-              | <img> <one_or_more>
-              | <new_line> <one_or_more>
-              | TEXT <one_or_more>
+<inner>    ::= <var_use> <inner>
+              | <head> <inner>
+              | <bold> <inner>
+              | <ul> <inner>
+              | <link> <inner>
+              | <img> <inner>
+              | <new_line> <inner>
+              | TEXT <inner>
               | ε
 
 <var_def>   ::= DEF BRACK_BEGIN TEXT EQUALS TEXT BRACK_END <var_def> | ε
