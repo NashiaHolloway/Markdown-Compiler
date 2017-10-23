@@ -53,14 +53,13 @@ Rules:
               | <ul> <inner>
               | <link> <inner>
               | <img> <inner>
-              | <new_line> <inner>
               | TEXT <inner>
               | ε
 
-<var_def>   ::= DEF BRACK_BEGIN TEXT EQUALS TEXT BRACK_END <var_def> | ε
-<var_use>   ::= USE BRACK_BEGIN TEXT BRACK_END
+<var_def>   ::= DEF BRACK_BEGIN HTH_TEXT EQUALS HTH_TEXT BRACK_END <var_def> | ε
+<var_use>   ::= USE BRACK_BEGIN HTH_TEXT BRACK_END | ε
 
-<bold>      ::= BOLD_BEGIN HTH_TEXT BOLD_END | ε
+<bold>      ::= BOLD_BEGIN TEXT BOLD_END | ε
 <ul>        ::= UL <none_or_more> <ul> | ε
 <link>      ::= BRACK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
 <img>       ::= IMG BRACK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε

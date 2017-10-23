@@ -17,9 +17,12 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
   def resetError() = errorFound = false
   def getError() : Boolean = errorFound
 
+  /*
+    <gittex>    ::= DOC_BEGIN <var_def> <title> <body> DOC_END
+   */
   override def gittex(): Unit = {
     doc_begin()
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
+    while(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
       var_def()
     }
     title()
@@ -27,34 +30,24 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     doc_end()
   }
 
-  override def para(): Unit = {
-    para_begin()
-    while(!Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
-      var_def() //if used, it must be the first
-      none_or_more()
-    }
-    para_end()
-  }
-
-  override def link(): Unit = {
-    brack_begin()
-    hth_text()
-    brack_end()
-    paren_begin()
-    hth_text()
-    paren_end()
-  }
-
-  override def bold(): Unit = {
-    bold_begin()
-    hth_text()
-    bold_end()
-  }
-
+  /*
+    OPTIONAL
+    <body>      ::= <inner> <body>
+                | <para> <body>
+                | <new_line> <body>
+                | ε
+   */
   override def body(): Unit = {
-    //If \DEF is used in the body, it must me the first thing
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
-      var_def()
+    //first "if" is to make it optional
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF) ||
+       Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEAD) ||
+       Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD_BEGIN) ||
+       Compiler.currentToken.equalsIgnoreCase(CONSTANTS.UL) ||
+       Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACK_BEGIN) ||
+       Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMG) ||
+       Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TEXT))
+    {
+      inner()
       body()
     }
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_BEGIN)){
@@ -65,12 +58,62 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       new_line()
       body()
     }
-    else {
-      inner()
-      body()
-    }
   }
 
+  /*
+    NOT OPTIONAL
+    <title>     ::= TITLE BRACK_BEGIN HTH_TEXT BRACK_END
+   */
+  override def title(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLE)) {
+      parse.push(CONSTANTS.TITLE)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      print("SYNTAX ERROR: \\TITLE was expected when '" + Compiler.currentToken + "' was found." )
+      setError()
+    }
+    brack_begin()
+    hth_text()
+    brack_end()
+  }
+
+  /*
+    OPTIONAL
+    <head>      ::= HEAD HTH_TEXT | ε
+   */
+  override def head(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEAD)){
+      parse.push(CONSTANTS.HEAD)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      println("SYNTAX ERROR: # was expected when '" + Compiler.currentToken + "' was found.")
+      setError()
+    }
+    hth_text()
+  }
+
+  /*
+    <para>      ::= PARB <var_def> <none_or_more> PARE
+   */
+  override def para(): Unit = {
+    para_begin()
+    while(!Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
+      var_def() //if used, it must be the first
+      none_or_more()
+    }
+    para_end()
+  }
+
+  /*
+    OPTIONAL
+    <none_or_more>   ::= <var_use> <none_or_more>
+                      | <bold> <none_or_more>
+                      | <link> <none_or_more>
+                      | HTH_TEXT <none_or_more>
+                      | ε
+   */
   override def none_or_more(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
       var_use()
@@ -89,10 +132,21 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       none_or_more()
     }
     else {
-      getError()
+      getError() //no error, since it's optional, just leave the method
     }
   }
 
+  /*
+    OPTIONAL
+    <inner>    ::= <var_use> <inner>
+              | <head> <inner>
+              | <bold> <inner>
+              | <ul> <inner>
+              | <link> <inner>
+              | <img> <inner>
+              | TEXT <inner>
+              | ε
+   */
   override def inner(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
       var_use()
@@ -118,33 +172,19 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       img()
       inner()
     }
-    else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEW_LINE)){
-      new_line()
-      inner()
-    }
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TEXT)){
       text()
       inner()
     }
     else {
-      getError()
+      getError() //no error since it's optional
     }
   }
 
-  override def title(): Unit = {
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLE)) {
-      parse.push(CONSTANTS.TITLE)
-      Compiler.Scanner.getNextToken()
-    }
-    else {
-      print("SYNTAX ERROR: \\TITLE was expected when '" + Compiler.currentToken + "' was found." )
-      setError()
-    }
-    brack_begin()
-    hth_text()
-    brack_end()
-  }
-
+  /*
+    OPTIONAL
+    <var_def>   ::= DEF BRACK_BEGIN HTH_TEXT EQUALS HTH_TEXT BRACK_END <var_def> | ε
+   */
   override def var_def(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
       parse.push(CONSTANTS.DEF)
@@ -155,23 +195,73 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       setError()
     }
     brack_begin()
-    text()
+    hth_text()
     equals()
+    hth_text()
+    brack_end()
+  }
+
+  /*
+    OPTIONAL
+    <var_use>   ::= USE BRACK_BEGIN HTH_TEXT BRACK_END | ε
+   */
+  override def var_use(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
+      parse.push(CONSTANTS.USE)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      println("SYNTAX ERROR: \\USE was expected when '" + Compiler.currentToken + "' was found.")
+      setError()
+    }
+    brack_begin()
     text()
     brack_end()
   }
 
-  override def new_line(): Unit = {
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEW_LINE)){
-      parse.push(CONSTANTS.NEW_LINE)
+  /*
+    OPTIONAL
+    <bold>      ::= BOLD_BEGIN TEXT BOLD_END | ε
+   */
+  override def bold(): Unit = {
+    bold_begin()
+    hth_text()
+    bold_end()
+  }
+
+  /*
+    OPTIONAL
+    <ul>        ::= UL <none_or_more> <ul> | ε
+   */
+  override def ul(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.UL)){
+      parse.push(CONSTANTS.UL)
       Compiler.Scanner.getNextToken()
     }
     else {
-      println("SYNTAX ERROR: \\\\ was expected when '" + Compiler.currentToken + "' was found.")
+      println("SYNTAX ERROR: + was expected when '" + Compiler.currentToken + "' was found.")
       setError()
     }
+      none_or_more()
+      ul()
   }
 
+  /*
+    OPTIONAL
+    <link>      ::= BRACK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
+   */
+  override def link(): Unit = {
+    brack_begin()
+    hth_text()
+    brack_end()
+    paren_begin()
+    hth_text()
+    paren_end()
+  }
+
+  /*
+    <img>       ::= IMG BRACK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
+   */
   override def img(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMG)){
       parse.push(CONSTANTS.IMG)
@@ -189,49 +279,26 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     paren_end()
   }
 
-  override def var_use(): Unit = {
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
-      parse.push(CONSTANTS.USE)
+  /*
+    <new_line>  ::= NEW_LINE | ε
+   */
+  override def new_line(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEW_LINE)){
+      parse.push(CONSTANTS.NEW_LINE)
       Compiler.Scanner.getNextToken()
     }
     else {
-      println("SYNTAX ERROR: \\USE was expected when '" + Compiler.currentToken + "' was found.")
+      println("SYNTAX ERROR: \\\\ was expected when '" + Compiler.currentToken + "' was found.")
       setError()
     }
-    brack_begin()
-    text()
-    brack_end()
   }
-
-  override def head(): Unit = {
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEAD)){
-      parse.push(CONSTANTS.HEAD)
-      Compiler.Scanner.getNextToken()
-    }
-    else {
-      println("SYNTAX ERROR: # was expected when '" + Compiler.currentToken + "' was found.")
-      setError()
-    }
-    hth_text()
-  }
-
-  override def ul(): Unit = {
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.UL)){
-      parse.push(CONSTANTS.UL)
-      Compiler.Scanner.getNextToken()
-    }
-    else {
-      println("SYNTAX ERROR: + was expected when '" + Compiler.currentToken + "' was found.")
-      setError()
-    }
-    none_or_more()
-    ul()
-  }
-
 
 
   /*
     Not a part of SyntaxAnalyzerTrait, but still needed
+   */
+  /*
+    DOC_BEGIN   ::= '\BEGIN'            //required
    */
   def doc_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_BEGIN)){
@@ -244,6 +311,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    DOC_END     ::= '\END'              //required
+   */
   def doc_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
       parse.push(CONSTANTS.DOC_END)
@@ -255,6 +325,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    PARA_BEGIN  ::= '\PARB'
+   */
   def para_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_BEGIN)){
       parse.push(CONSTANTS.PARA_BEGIN)
@@ -266,6 +339,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    PARA_END    ::= '\PARE'
+   */
   def para_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
       parse.push(CONSTANTS.PARA_END)
@@ -277,6 +353,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    BRACK_BEGIN ::= '['
+   */
   def brack_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACK_BEGIN)){
       parse.push(CONSTANTS.BRACK_BEGIN)
@@ -288,6 +367,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    BRACK_END   ::= ']'
+   */
   def brack_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACK_END)){
       parse.push(CONSTANTS.BRACK_END)
@@ -299,6 +381,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    PAREN_BEGIN ::= '('
+   */
   def paren_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PAREN_BEGIN)){
       parse.push(CONSTANTS.PAREN_BEGIN)
@@ -310,6 +395,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    PAREN_END   ::= ')'
+   */
   def paren_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PAREN_END)){
       parse.push(CONSTANTS.PAREN_END)
@@ -321,6 +409,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    BOLD_BEGIN  ::= '* '
+   */
   def bold_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD_BEGIN)){
       parse.push(CONSTANTS.BOLD_BEGIN)
@@ -332,6 +423,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    BOLD_END    ::= ' *'
+   */
   def bold_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD_END)){
       parse.push(CONSTANTS.BOLD_END)
@@ -343,6 +437,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    EQUALS      ::= '='
+   */
   def equals(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.EQUALS)){
       parse.push(CONSTANTS.EQUALS)
@@ -354,6 +451,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    HTH_TEXT    ::= Plain text
+   */
   def hth_text(): Unit = {
     if(Compiler.Scanner.isText(Compiler.currentToken)){
       parse.push(Compiler.currentToken)
@@ -365,6 +465,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
+  /*
+    TEXT        ::= Plain text | ε
+   */
   def text(): Unit = {
     if(Compiler.Scanner.isText(Compiler.currentToken)){
       parse.push(Compiler.currentToken)
