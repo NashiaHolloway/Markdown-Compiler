@@ -3,13 +3,13 @@ This compiler translates a self-created programming language (Gittex Markdown la
 
 # Goals
 The intention of this project is to use and apply the concepts of programming languages to design and develop 
-a complex compiler.  In doing so, I will develop a better understanding of the design of a high-level programming
-language and the need for studying the concepts behind programmin languages.  Additionally, through this project, I
-will familiarize myself with several software development tools (e.g., IntelliJ, GitHub, etc.), Scala programming
-language toos (e.g., Scaladocs, Scala tests, ScalaCheck, etc.) and gain experience in software engineering and 
+a complex compiler.  In doing so, I have developed a better understanding of the design of a high-level programming
+language and the need for studying the concepts behind programming languages.  Additionally, through this project, I
+have familiarized myself with several software development tools (e.g., IntelliJ, GitHub, etc.), Scala programming
+language tools (e.g., Scaladocs, Scala tests, ScalaCheck, etc.) and gained experience in software engineering and 
 development.
 
-This project will give me developmental experience in the following areas of programming languages/concepts:
+This project has given me developmental experience in the following areas of programming languages/concepts:
   Writing BNF/EBNF grammar rules
   Lexical analysis
   Syntactical analysis and parsing
