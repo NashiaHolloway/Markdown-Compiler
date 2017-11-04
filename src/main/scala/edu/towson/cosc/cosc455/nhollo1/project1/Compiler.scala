@@ -3,25 +3,41 @@ package edu.towson.cosc.cosc455.nhollo1.project1
 object Compiler {
   var currentToken : String = ""
   var fileContents : String = ""
+  var file: String = ""
+  var end: Boolean = false //to help determine end of file
 
   val Scanner = new LexicalAnalyzer
   val Parser = new SyntaxAnalyzer
-  val SemanticAnalyzer = new SyntaxAnalyzer
+  val SemanticAnalyzer = new SemanticAnalyzer
 
   def main(args: Array[String]): Unit = {
+    //initialize filename
+    file = args(0)
+
+    //checks the type of file and puts it into a string
     checkFile(args)
     readFile(args(0))
 
-    Scanner.getNextToken()
+    //pass the string to the lexical analyzer!
+    Scanner.start(fileContents)
 
+    //run through while loop until the file is empty
+    while(Scanner.filePos < Scanner.fileSize && !end){
+      Scanner.getNextToken() //get token, check lexicals
+      Parser.gittex()        //check syntax
+      if(currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
+        end = true
+      }
+    }
+    SemanticAnalyzer.semantics() //check semantics
   }
 
-  def readFile(file : String) = {
+  def readFile(file : String): Unit = {
     val source = scala.io.Source.fromFile(file)
     fileContents = try source.mkString finally source.close()
   }
 
-  def checkFile(args : Array[String]) = {
+  def checkFile(args : Array[String]): Unit = {
     if (args.length != 1) {
       println("USAGE ERROR: wrong number of args fool!")
       System.exit(1)
@@ -32,3 +48,4 @@ object Compiler {
     }
   }
 }
+

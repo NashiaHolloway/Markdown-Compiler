@@ -2,27 +2,27 @@ Terminal Symbols:
 
 DOC_BEGIN   ::= '\BEGIN'            //required
 DOC_END     ::= '\END'              //required
-TITLE       ::= '\TITLE'            //required
+TITLE       ::= '\TITLE['            //required
 
 PARA_BEGIN  ::= '\PARB'             //paragraph beginning and ending
 PARA_END    ::= '\PARE'
 
-BOLD_BEGIN  ::= '* '                //bold beginning and ending
-BOLD_END    ::= ' *'
+BOLD  ::= '*'                       //bold
 
 PAREN_BEGIN ::= '('                 //used for link and img. NOTE: NOT TO BE CONFUSED WITH PARA (PARAGRAPH)
 PAREN_END   ::= ')'
 
-BRACK_BEGIN ::= '['                 //used for var_def, var_use, link, img, title
-BRACK_END   ::= ']'
+BRACK_END   ::= ']'                 //used for var_def, var_use, link, img, title
+
+LINK_BEGIN  ::= '['
 
 EQUALS      ::= '='                 //used for defining variables
 UL          ::= '+ '                //for unordered list
 NEW_LINE    ::= '\\'                //for new line
 HEAD        ::= '# '                //for header
-IMG         ::= '!'                 //for image
-DEF         ::= '\DEF'              //for defining variables
-USE         ::= '\USE'              //for using defined variables
+IMG         ::= '!['                 //for image
+DEF         ::= '\DEF['              //for defining variables
+USE         ::= '\USE['              //for using defined variables
 TEXT        ::= Plain text | ε      //can have text or no text
 HTH_TEXT    ::= Plain text          //"have to have text"
 
@@ -34,12 +34,13 @@ Rules:
                 | <new_line> <body>
                 | ε
 
-<title>     ::= TITLE BRACK_BEGIN HTH_TEXT BRACK_END
+<title>     ::= TITLE HTH_TEXT BRACK_END
 <head>      ::= HEAD HTH_TEXT | ε
-<para>      ::= PARB <var_def> <none_or_more> PARE
+<para>      ::= PARB <var_def> <inner> PARE
 
 //essentially the * symbol in ANTLR
 //must use recursion to get this effect???????
+//same as <inner-item>
 <none_or_more>   ::= <var_use> <none_or_more>
                     | <bold> <none_or_more>
                     | <link> <none_or_more>
@@ -47,6 +48,7 @@ Rules:
                     | ε
 
 //kind of like the + symbol in ANTLR
+//same as <inner-text>
 <inner>    ::= <var_use> <inner>
               | <head> <inner>
               | <bold> <inner>
@@ -56,12 +58,12 @@ Rules:
               | TEXT <inner>
               | ε
 
-<var_def>   ::= DEF BRACK_BEGIN HTH_TEXT EQUALS HTH_TEXT BRACK_END <var_def> | ε
-<var_use>   ::= USE BRACK_BEGIN HTH_TEXT BRACK_END | ε
+<var_def>   ::= DEF HTH_TEXT EQUALS HTH_TEXT BRACK_END <var_def> | ε
+<var_use>   ::= USE HTH_TEXT BRACK_END | ε
 
-<bold>      ::= BOLD_BEGIN TEXT BOLD_END | ε
+<bold>      ::= BOLD TEXT BOLD | ε
 <ul>        ::= UL <none_or_more> <ul> | ε
-<link>      ::= BRACK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
-<img>       ::= IMG BRACK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
+<link>      ::= LINK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
+<img>       ::= IMG HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
 <new_line>  ::= NEW_LINE | ε
 
