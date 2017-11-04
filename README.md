@@ -1,5 +1,5 @@
 # Markdown-Compiler
-This compiler translates a self-created programming language (Gittex Markdown language) into HTML.
+This compiler translates a unique programming language (Gittex Markdown language) into HTML.
 
 # Goals
 The intention of this project is to use and apply the concepts of programming languages to design and develop 
