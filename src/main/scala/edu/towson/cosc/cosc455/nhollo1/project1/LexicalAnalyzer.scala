@@ -29,7 +29,7 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
   /*
     Get the next character
    */
-  override def getChar() {
+  override def getChar(): Unit = {
     if(filePos < fileSize){
       filePos += 1
       nextChar = file.charAt(filePos)
@@ -112,7 +112,7 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     For when the string successfully passed lookup
    */
   def wrap(): Unit = {
-    val passToken: String = passToken.mkString
+    val passToken: String = token.mkString
     if(lookupArr.contains(passToken.toUpperCase)) {
       setCurrent(passToken) //token to compiler
       token.clear()
