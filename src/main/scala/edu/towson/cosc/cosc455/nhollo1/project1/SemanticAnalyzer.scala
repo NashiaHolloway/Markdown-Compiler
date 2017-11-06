@@ -154,13 +154,13 @@ class SemanticAnalyzer {
         Print output to file
        */
       val out = outputTree.reverse.mkString
-      val print = new PrintWriter(new File(Compiler.file + ".html"))
+      val print = new PrintWriter(new File(Compiler.fileContents + ".html"))
       print.write(out)
       print.close
 
       //open HTML
       if(!printed){
-        openHTMLFileInBrowser(Compiler.file + ".html")
+        openHTMLFileInBrowser(Compiler.fileContents + ".html")
         printed = true
       }
     }

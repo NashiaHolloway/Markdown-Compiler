@@ -37,6 +37,10 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       var_def()
       body()
     }
+    else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEAD)){
+      head()
+      body()
+    }
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_BEGIN)){
       para()
       body()
@@ -50,7 +54,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
     else {
       inner()
-      body()
+      //body()
     }
   }
 
@@ -137,7 +141,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
         para_end()
       }
       else {
-        println("Syntax Error: \\PARB was never given")
+        println("Syntax Error: \\PARAB was never given")
         System.exit(1)
       }
     }
@@ -175,6 +179,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     else {
       getError() //no error since it's optional
     }
+
   }
 
   /*
@@ -320,7 +325,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       Compiler.Scanner.getNextToken()
     }
     else {
-      println("SYNTAX ERROR: \\PARB was expected when '" + Compiler.currentToken + "' was found.")
+      println("SYNTAX ERROR: \\PARAB was expected when '" + Compiler.currentToken + "' was found.")
       System.exit(1)
     }
   }
@@ -334,7 +339,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       Compiler.Scanner.getNextToken()
     }
     else {
-      println("SYNTAX ERROR: \\PARE was expected when '" + Compiler.currentToken + "' was found.")
+      println("SYNTAX ERROR: \\PARAE was expected when '" + Compiler.currentToken + "' was found.")
       System.exit(1)
     }
   }
@@ -357,7 +362,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     BRACK_END   ::= ']'
    */
   def brack_end(): Unit = {
-    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACK_END)){
+    if(Compiler.currentToken.equals(CONSTANTS.BRACK_END)){
       parse.push(CONSTANTS.BRACK_END)
       Compiler.Scanner.getNextToken()
     }

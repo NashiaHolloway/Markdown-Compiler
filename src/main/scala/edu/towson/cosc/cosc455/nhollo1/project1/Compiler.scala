@@ -1,5 +1,7 @@
 package edu.towson.cosc.cosc455.nhollo1.project1
 
+import javax.jnlp.FileContents
+
 object Compiler {
   var currentToken : String = ""
   var fileContents : String = ""
@@ -32,8 +34,8 @@ object Compiler {
     SemanticAnalyzer.semantics() //check semantics
   }
 
-  def readFile(file : String): Unit = {
-    val source = scala.io.Source.fromFile(file)
+  def readFile(File : String): Unit = {
+    val source = scala.io.Source.fromFile(File)
     fileContents = try source.mkString finally source.close()
   }
 
@@ -42,7 +44,7 @@ object Compiler {
       println("USAGE ERROR: wrong number of args fool!")
       System.exit(1)
     }
-    else if (! args(0).endsWith(".mkd")) {
+    else if (! args(0).endsWith(".gtx")) {
       println("USAGE ERROR: wrong extension fool!")
       System.exit(1)
     }

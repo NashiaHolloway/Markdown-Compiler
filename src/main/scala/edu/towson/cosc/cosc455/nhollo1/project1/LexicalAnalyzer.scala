@@ -12,10 +12,9 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
   var filePos: Int = -1 //file position
 
 
-
-  def start(File: String): Unit = {
+  def start(file1: String): Unit = {
     initializeLookupArray()
-    file = File.toCharArray
+    file = file1.toCharArray
     fileSize = file.length - 1
   }
 
@@ -47,8 +46,8 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     getNotText()
 
     //Break into lexical units
-    if(nextChar.equals('+') || nextChar.equals('=') || nextChar.equals('+') || nextChar.equals('+') ||
-      nextChar.equals('+') || nextChar.equals('+') || nextChar.equals('+')){
+    if(nextChar.equals('+') || nextChar.equals('=') || nextChar.equals('#') || nextChar.equals('(') ||
+      nextChar.equals(')') || nextChar.equals('[') || nextChar.equals(']')){
       addChar()
     }
     else if(nextChar.equals('\\')){
@@ -158,12 +157,9 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     Method to get tokens that aren't text
    */
   def getNotText(): Unit = {
-    nextChar match {
-      case ' ' => getChar()
-      case '\r' => getChar()
-      case '\n' => getChar()
-      case '\t' => getChar()
-      if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
+    while (nextChar.equals(' ') || nextChar.equals('\r') || nextChar.equals('\n') || nextChar.equals('\t')) {
+      getChar()
+      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)) {
         getChar()
         return
       }
