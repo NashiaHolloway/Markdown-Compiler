@@ -1,6 +1,8 @@
 package edu.towson.cosc.cosc455.nhollo1.project1
 
-import javax.jnlp.FileContents
+import java.awt.Desktop
+import java.io.{File, IOException}
+import scala.io.Source
 
 object Compiler {
   var currentToken : String = ""
@@ -21,7 +23,16 @@ object Compiler {
     readFile(args(0))
 
     //pass the string to the lexical analyzer!
-    Scanner.start(fileContents)
+    //Scanner.start(fileContents)
+
+    while(fileContents != ""){
+      println(currentToken)
+      Scanner.start(fileContents)
+    }
+    println(currentToken)
+  }
+
+    /*
 
     //run through while loop until the file is empty
     while(Scanner.filePos < Scanner.fileSize && !end){
@@ -31,8 +42,9 @@ object Compiler {
         end = true
       }
     }
-    SemanticAnalyzer.semantics() //check semantics
+    SemanticAnalyzer.semantics() //check semantics and open HTML webpage
   }
+  */
 
   def readFile(File : String): Unit = {
     val source = scala.io.Source.fromFile(File)

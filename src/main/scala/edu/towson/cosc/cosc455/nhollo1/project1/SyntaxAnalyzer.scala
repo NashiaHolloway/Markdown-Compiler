@@ -12,9 +12,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
   def resetError() = errorFound = false
   def getError() : Boolean = errorFound
 
-  /*
-    <gittex>    ::= DOC_BEGIN <var_def> <title> <body> DOC_END
-   */
+  /**
+    * <gittex>  ::= DOC_BEGIN <var_def> <title> <body> DOC_END
+    */
   override def gittex(): Unit = {
     doc_begin()
     while(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
@@ -25,13 +25,13 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     doc_end()
   }
 
-  /*
-    OPTIONAL
-    <body>      ::= <inner> <body>
-                | <para> <body>
-                | <new_line> <body>
-                | ε
-   */
+  /**
+    * OPTIONAL
+    * <body>  ::= <inner> <body>
+    *         | <para> <body>
+    *         | <new_line> <body>
+    *         | ε
+    */
   override def body(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)) {
       var_def()
@@ -58,46 +58,46 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    NOT OPTIONAL
-    <title>     ::= TITLE HTH_TEXT BRACK_END
-   */
+  /**
+    * NOT OPTIONAL
+    * <title>     ::= TITLE HTH_TEXT BRACK_END
+    */
   override def title(): Unit = {
     Title()
     hth_text()
     brack_end()
   }
 
-  /*
-    OPTIONAL
-    <head>      ::= HEAD HTH_TEXT | ε
-   */
+  /**
+    * OPTIONAL
+    * <head>      ::= HEAD HTH_TEXT | ε
+    */
   override def head(): Unit = {
     Head()
     hth_text()
   }
 
-  /*
-    <para>      ::= PARB <var_def> <inner> PARE
-   */
+  /**
+    * <para>      ::= PARB <var_def> <inner> PARE
+    */
   override def para(): Unit = {
     para_begin()
     var_def()
-    while(!Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END) && !Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
+    while(!Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END) && !Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
       inner()
     }
     para_end()
   }
 
-  /*
-    OPTIONAL
-    //same as <inner-item>
-    <none_or_more>   ::= <var_use> <none_or_more>
-                      | <bold> <none_or_more>
-                      | <link> <none_or_more>
-                      | HTH_TEXT <none_or_more>
-                      | ε
-   */
+  /**
+    * OPTIONAL
+    * //same as <innter-item>
+    * <none_or_more>  ::= <var_use> <none_or_more>
+    *                 | <bold> <none_or_more>
+    *                 | <link> <none_or_more>
+    *                 | HTH_TEXT <none_or_more>
+    *                 | ε
+    */
   override def none_or_more(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
       var_use()
@@ -111,30 +111,36 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       link()
       none_or_more()
     }
+      /*
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HTH_TEXT)){
       text()
       none_or_more()
     }
+    */
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
-      setError() //returns true (replace with "found = true"?)
+      //setError() //returns true (replace with "found = true"?)
+    }
+    else if(Compiler.Scanner.isText(Compiler.currentToken)){
+      hth_text()
+      none_or_more()
     }
     else {
-      getError() //no error, since it's optional, just leave the method
+      //getError() //no error, since it's optional, just leave the method
     }
   }
 
-  /*
-    OPTIONAL
-    //same as <inner-text>
-    <inner>    ::= <var_use> <inner>
-              | <head> <inner>
-              | <bold> <inner>
-              | <ul> <inner>
-              | <link> <inner>
-              | <img> <inner>
-              | TEXT <inner>
-              | ε
-   */
+  /**
+    * OPTIONAL
+    * //same as <inner-text>
+    * <inner>   ::= <var_use> <inner>
+    *           | <head> <inner>
+    *           | <bold> <inner>
+    *           | <ul> <inner>
+    *           | <link> <inner>
+    *           | <img> <inner>
+    *           | TEXT <inner>
+    *           | ε
+    */
   override def inner(): Unit = {
     if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
       if (parse.contains(CONSTANTS.PARA_BEGIN)){
@@ -169,23 +175,23 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       var_use()
       inner()
     }
-    else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TEXT)){
-      text()
+    else if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEW_LINE)) {
+      new_line()
       inner()
     }
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
 
     }
     else {
-      getError() //no error since it's optional
+      text()
     }
 
   }
 
-  /*
-    OPTIONAL
-    <var_def>   ::= DEF HTH_TEXT EQUALS HTH_TEXT BRACK_END <var_def> | ε
-   */
+  /**
+    * OPTIONAL
+    * <var_def>   ::= DEF HTH_TEXT EQUALS HTH_TEXT BRACK_END <var_def> | ε
+    */
   override def var_def(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
       varDef()
@@ -196,10 +202,10 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    OPTIONAL
-    <var_use>   ::= USE HTH_TEXT BRACK_END | ε
-   */
+  /**
+    * OPTIONAL
+    * <var_use>   ::= USE HTH_TEXT BRACK_END | ε
+    */
   override def var_use(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
       varUse()
@@ -208,29 +214,29 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    OPTIONAL
-    <bold>      ::= BOLD TEXT BOLD | ε
-   */
+  /**
+    * OPTIONAL
+    * <bold>      ::= BOLD TEXT BOLD | ε
+    */
   override def bold(): Unit = {
     Bold()
     text()
     Bold()
   }
 
-  /*
-    OPTIONAL
-    <ul>        ::= UL <none_or_more> <ul> | ε
-   */
+  /**
+    * OPTIONAL
+    * <ul>        ::= UL <none_or_more> <ul> | ε
+    */
   override def ul(): Unit = {
     list()
     none_or_more()
   }
 
-  /*
-    OPTIONAL
-    <link>      ::= LINK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
-   */
+  /**
+    * OPTIONAL
+    * <link>      ::= LINK_BEGIN HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
+    */
   override def link(): Unit = {
     link_begin()
     hth_text()
@@ -240,9 +246,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     paren_end()
   }
 
-  /*
-    <img>       ::= IMG HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
-   */
+  /**
+    * <img>       ::= IMG HTH_TEXT BRACK_END PAREN_BEGIN HTH_TEXT PAREN_END | ε
+    */
   override def img(): Unit = {
     image()
     hth_text()
@@ -252,9 +258,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     paren_end()
   }
 
-  /*
-    <new_line>  ::= NEW_LINE | ε
-   */
+  /**
+    * <new_line>  ::= NEW_LINE | ε
+    */
   override def new_line(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEW_LINE)){
       parse.push(CONSTANTS.NEW_LINE)
@@ -274,9 +280,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
   /*
     Not a part of SyntaxAnalyzerTrait, but still needed
    */
-  /*
-    DOC_BEGIN   ::= '\BEGIN'            //required
-   */
+  /**
+    * DOC_BEGIN   ::= '\BEGIN'            //required
+    */
   def doc_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_BEGIN)){
       parse.push(CONSTANTS.DOC_BEGIN)
@@ -288,13 +294,19 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    DOC_END     ::= '\END'              //required
-   */
+  /**
+    * DOC_END     ::= '\END'              //required
+    */
   def doc_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
       parse.push(CONSTANTS.DOC_END)
       Compiler.Scanner.getNextToken()
+      if(Compiler.Scanner.nextChar.equals('\n'))
+        return
+      else {
+        println("SYNTAX ERROR: There shouldn't be text after \\END")
+        System.exit(0)
+      }
     }
     else {
       println("SYNTAX ERROR: \\END was expected when '" + Compiler.currentToken + "' was found.")
@@ -302,9 +314,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    TITLE       ::= '\TITLE['            //required
-   */
+  /**
+    * TITLE       ::= '\TITLE['            //required
+    */
   def Title(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLE)) {
       parse.push(CONSTANTS.TITLE)
@@ -316,9 +328,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    PARA_BEGIN  ::= '\PARB'
-   */
+  /**
+    * PARA_BEGIN  ::= '\PARB'
+    */
   def para_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_BEGIN)){
       parse.push(CONSTANTS.PARA_BEGIN)
@@ -330,9 +342,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    PARA_END    ::= '\PARE'
-   */
+  /**
+    * PARA_END    ::= '\PARE'
+    */
   def para_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
       parse.push(CONSTANTS.PARA_END)
@@ -344,9 +356,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    LINK_BEGIN ::= '['
-   */
+  /**
+    * LINK_BEGIN ::= '['
+    */
   def link_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.LINK_BEGIN)){
       parse.push(CONSTANTS.LINK_BEGIN)
@@ -358,9 +370,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    BRACK_END   ::= ']'
-   */
+  /**
+    * BRACK_END   ::= ']'
+    */
   def brack_end(): Unit = {
     if(Compiler.currentToken.equals(CONSTANTS.BRACK_END)){
       parse.push(CONSTANTS.BRACK_END)
@@ -372,9 +384,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    PAREN_BEGIN ::= '('
-   */
+  /**
+    * PAREN_BEGIN ::= '('
+    */
   def paren_begin(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PAREN_BEGIN)){
       parse.push(CONSTANTS.PAREN_BEGIN)
@@ -386,9 +398,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    PAREN_END   ::= ')'
-   */
+  /**
+    * PAREN_END   ::= ')'
+    */
   def paren_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PAREN_END)){
       parse.push(CONSTANTS.PAREN_END)
@@ -400,9 +412,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    BOLD_BEGIN  ::= '* '
-   */
+  /**
+    * BOLD_BEGIN  ::= '* '
+    */
   def Bold(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BOLD)){
       parse.push(CONSTANTS.BOLD)
@@ -414,9 +426,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    EQUALS      ::= '='
-   */
+  /**
+    * EQUALS      ::= '='
+    */
   def equals(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.EQUALS)){
       parse.push(CONSTANTS.EQUALS)
@@ -428,9 +440,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    HEAD        ::= '# '                //for header
-   */
+  /**
+    * HEAD        ::= '# '                //for header
+    */
   def Head(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.HEAD)){
       parse.push(CONSTANTS.HEAD)
@@ -442,9 +454,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    DEF         ::= '\DEF['              //for defining variables
-   */
+  /**
+    * DEF         ::= '\DEF['              //for defining variables
+    */
   def varDef(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
       parse.push(CONSTANTS.DEF)
@@ -456,9 +468,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    USE         ::= '\USE['              //for using defined variables
-   */
+  /**
+    * USE         ::= '\USE['              //for using defined variables
+    */
   def varUse(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.USE)){
       parse.push(CONSTANTS.USE)
@@ -470,9 +482,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    UL          ::= '+ '                //for unordered list
-   */
+  /**
+    * UL          ::= '+ '                //for unordered list
+    */
   def list(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.UL)){
       parse.push(CONSTANTS.UL)
@@ -484,9 +496,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    IMG         ::= '!['                 //for image
-   */
+  /**
+    * IMG         ::= '!['                 //for image
+    */
   def image(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.IMG)){
       parse.push(CONSTANTS.IMG)
@@ -498,9 +510,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    HTH_TEXT    ::= Plain text
-   */
+  /**
+    * HTH_TEXT    ::= Plain text
+    */
   def hth_text(): Unit = {
     if(Compiler.Scanner.isText(Compiler.currentToken)){
       parse.push(Compiler.currentToken)
@@ -512,9 +524,9 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     }
   }
 
-  /*
-    TEXT        ::= Plain text | ε
-   */
+  /**
+    * TEXT        ::= Plain text | ε
+    */
   def text(): Unit = {
     if(Compiler.Scanner.isText(Compiler.currentToken)){
       parse.push(Compiler.currentToken)

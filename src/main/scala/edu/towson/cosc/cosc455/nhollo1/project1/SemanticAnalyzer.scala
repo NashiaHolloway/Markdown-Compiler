@@ -17,10 +17,9 @@ class SemanticAnalyzer {
   var count: Int = 0
   var printed: Boolean = false
 
-
-  /*
-    Starter method
-   */
+  /**
+    * Starter method
+    */
   def semantics(): Unit = {
     //prep
     parseTree = Compiler.Parser.parse.reverse
@@ -30,9 +29,9 @@ class SemanticAnalyzer {
     outputHTML()
   }
 
-  /*
-    translates input file to HTML text
-   */
+  /**
+    * Translates the input file to HTML text
+    */
   def outputHTML(): Unit = {
     while(!parseTree.isEmpty){
       next match {
@@ -149,14 +148,11 @@ class SemanticAnalyzer {
           outputTree.push(next)
           next = parseTree.pop()
       }
-
-      /*
-        Print output to file
-       */
+      //Prints output to file
       val out = outputTree.reverse.mkString
       val print = new PrintWriter(new File(Compiler.fileContents + ".html"))
       print.write(out)
-      print.close
+      print.close()
 
       //open HTML
       if(!printed){
@@ -166,10 +162,11 @@ class SemanticAnalyzer {
     }
   }
 
-  /*
-    Hack Scala/Java function to take a
-    String filename and open in default web browser.
-   */
+  /**
+    * Hack Scala/Java function to take a
+    * String filename and open in default web browser.
+    * @param htmlFileStr
+    */
   def openHTMLFileInBrowser(htmlFileStr : String): Unit = {
     val file : File = new File(htmlFileStr.trim)
     println(file.getAbsolutePath)

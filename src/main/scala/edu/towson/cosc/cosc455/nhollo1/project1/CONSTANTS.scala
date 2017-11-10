@@ -12,13 +12,15 @@ object CONSTANTS {
   val PAREN_BEGIN   : String = "("
   val PAREN_END     : String = ")"
   val EQUALS        : String = "="
-  val UL            : String = "+ "
+  val UL            : String = "+"
   val NEW_LINE      : String = "\\\\"
   val HEAD          : String = "#"
   val IMG           : String = "!["
   val DEF           : String = "\\DEF["
   val USE           : String = "\\USE["
-  val TEXT          : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_| "
-  val HTH_TEXT      : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_| "
+  val TEXT          : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_|"
+  val HTH_TEXT      : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_|"
   val SPEC          : String = "\\#*[!]+()="
+
+
 }

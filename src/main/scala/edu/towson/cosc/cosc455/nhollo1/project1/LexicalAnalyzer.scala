@@ -3,143 +3,141 @@ package edu.towson.cosc.cosc455.nhollo1.project1
 import scala.collection.mutable.ArrayBuffer //for ArrayBuffer
 
 class LexicalAnalyzer extends LexicalAnalyzerTrait {
+
   //declare values/variables
   var nextChar: Char = ' '
-  var file: Array[Char] = Array()
-  val lookupArr = new Array[String](20) //not resizeable
+  var lookupList : List[String] = List()
+  var source: String = ""
   var token = new ArrayBuffer[Char](50) //resizable
-  var fileSize: Int = 0
   var filePos: Int = -1 //file position
+  var length: Int = 0
 
-
+  /**
+    * Starter method
+    * Don't really need, but makes my life easier
+    * @param file1
+    */
   def start(file1: String): Unit = {
-    initializeLookupArray()
-    file = file1.toCharArray
-    fileSize = file.length - 1
+    initializeLookup()
+    source = file1
+    getChar()
+    getNextToken()
   }
 
-  /*
-    Called from the getNextToken method to grab new character
-   */
+  /**
+    * Called from the getNextToken method to grab new character
+    */
   override def addChar(): Unit = {
     token += nextChar
+    length += 1
   }
 
-  /*
-    Get the next character
-   */
+  /**
+    * Get the next character
+    */
   override def getChar(): Unit = {
-    if(filePos < fileSize){
+    if(filePos < source.length - 1){
       filePos += 1
-      nextChar = file.charAt(filePos)
+      nextChar = source.charAt(filePos)
+
     }
     else {
 
     }
   }
 
-  /*
-    Gets next token
-   */
+  /**
+    * Gets the next token.
+    */
   override def getNextToken(): Unit = {
-    getChar()
-    getNotText()
 
-    //Break into lexical units
-    if(nextChar.equals('+') || nextChar.equals('=') || nextChar.equals('#') || nextChar.equals('(') ||
-      nextChar.equals(')') || nextChar.equals('[') || nextChar.equals(']')){
-      addChar()
+    if(isSpace(nextChar)){
+      getNonBlank()
     }
-    else if(nextChar.equals('\\')){
-      addChar()
-      getChar()
-      while(!nextChar.equals('[') && nextChar != '\n' && nextChar != '\\'){
-        if(nextChar.equals('\r')){
-          addChar()
-        }
-        else {
-          addChar()
-          getChar()
-        }
-      }
-      if(nextChar.equals('[') || nextChar.equals('\\')){
-        addChar()
-      }
-    }
-    else if(nextChar.equals('*')){
-      addChar()
-      getChar()
-      if(nextChar.equals('*')){
+    if(nextChar.equals('[') || nextChar.equals(']') || nextChar.equals('(') || nextChar.equals(')') || nextChar.equals('!')
+      || nextChar.equals('#') || nextChar.equals('\\') || nextChar.equals('*') || nextChar.equals('+') || nextChar.equals('=')){
+      if(nextChar.equals('\\')){
         addChar()
         getChar()
-        wrap()
-      }
-      else {
-        filePos -= 1
-      }
-    }
-    else if(nextChar.equals('!')){
-      addChar()
-      getChar()
-      if(nextChar.equals('[')){
-        addChar()
-      }
-    }
-    else {
-      addChar()
-      getChar()
-      while(!CONSTANTS.SPEC.contains(nextChar)){
-        addChar()
-        if(filePos < fileSize) {
+        while(!isSpace(nextChar) && !nextChar.equals('[')){
+          addChar()
           getChar()
         }
-        else {
-
+        if(nextChar.equals('[')){
+          addChar()
+          getChar()
         }
       }
-      filePos -= 1
+      //for Image
+      else if(nextChar.equals('!')){
+        addChar()
+        getChar()
+        if(nextChar.equals('[')){
+          addChar()
+          getChar()
+        }
+      }
+      else {
+        addChar()
+        getChar()
+      }
+      wrap()
     }
-    wrap()
-  }
-
-  /*
-    Not really sure what I can use this for...
-   */
-  override def lookup(): Boolean = ???
-
-  /*
-    For when the string successfully passed lookup
-   */
-  def wrap(): Unit = {
-    val passToken: String = token.mkString
-    if(lookupArr.contains(passToken.toUpperCase)) {
-      setCurrent(passToken) //token to compiler
-      token.clear()
-    }
-    else if(isText(passToken)){
-      setCurrent(passToken) //token to compiler
-      token.clear()
+    else if(!isSpace(nextChar)){
+      while(isText(nextChar.toString)){
+        addChar()
+        getChar()
+      }
+      Compiler.currentToken = token.mkString
     }
     else {
-      println("Lexical Error: The lexical token is incorrect, " + passToken + " was found.")
-      System.exit(1)
+      println("Can't find next token")
+    }
+    token.clear()
+  }
+
+  /**
+    * Packages the new token if lookup() is passed
+    */
+  def wrap(): Unit = {
+    var newT: String = token.mkString
+    if(lookup(newT)){
+      Compiler.currentToken = newT
+      //token.clear()
     }
   }
 
-  /*
-    Called in wrap()
-    Used to set currentToken in compiler to next
-   */
+  /**
+    * If the token is legal, return true, else return false
+    * @return
+    */
+  override def lookup(newT: String): Boolean = {
+    if(!lookupList.contains(newT)){
+      println("LEXICAL ERROR: The lexical token is incorrect, " + newT + " was found.")
+      System.exit(1)
+      return false
+    }
+    true
+  }
+
+  /**
+    * Called in wrap()
+    * Used to set currentToken in compiler to next
+    * @param currentToken
+    */
   def setCurrent(currentToken: String): Unit = {
     Compiler.currentToken = currentToken
   }
 
-  /*
-    returns true or false if it is text or not
-  */
+  /**
+    * Returns true or false if ii is text or not.
+    * You can have whitespace in text.
+    * @param text
+    * @return
+    */
   def isText(text: String): Boolean = {
     text match {
-      case "\\\\" => false
+      case "\\" => false
       case "#" => false
       case "!" => false
       case "*" => false
@@ -153,9 +151,9 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     }
   }
 
-  /*
-    Method to get tokens that aren't text
-   */
+  /**
+    * Method to get tokens that aren't text
+    */
   def getNotText(): Unit = {
     while (nextChar.equals(' ') || nextChar.equals('\r') || nextChar.equals('\n') || nextChar.equals('\t')) {
       getChar()
@@ -166,42 +164,40 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     }
   }
 
-  /*
-    Determines if the current character is a space
-   */
+  /**
+    * Determines if the current character is a space
+    * @param c
+    * @return
+    */
   def isSpace(c: Char): Boolean = {
-    if(c == ' '){
+    if(c == ' ' || c == '\n' || c == '\r' || c == '\b' || c == '\t' || c == '\f'){
       true
     }
     else false
   }
 
+  /**
+    * Method to get non-blanks.  Called from start()
+    */
   def getNonBlank(): Unit = {
     while(isSpace(nextChar)){
       getChar()
     }
   }
 
-  def initializeLookupArray(): Unit = {
-    lookupArr(0) = "\\BEGIN"
-    lookupArr(1) = "\\END"
-    lookupArr(2) = "\\TITLE["
-    lookupArr(3) = "]"
-    lookupArr(4) = "#"
-    lookupArr(5) = "\\PARAB"
-    lookupArr(6) = "\\PARAE"
-    lookupArr(7) = "\\DEF["
-    lookupArr(8) = "\\USE["
-    lookupArr(9) = "**"
-    lookupArr(10) = "*"
-    lookupArr(11) = "+"
-    lookupArr(12) = "\\\\"
-    lookupArr(13) = "["
-    lookupArr(14) = "("
-    lookupArr(15) = ")"
-    lookupArr(16) = "="
-    lookupArr(17) = "!["
-    lookupArr(18) = "]"
-    lookupArr(19) = (('a' to 'z') ++ ('A' to 'Z') ++ ('0' to '9')).toString()
+  /**
+    * Method called from start() to initialize the list used in getNextToken() to make sure token is valid.
+    */
+  def initializeLookup(): Unit = {
+    lookupList = List("\\BEGIN", "\\begin",
+                  "\\END", "\\end",
+                  "\\TITLE[", "\\title[",
+                  "\\DEF[", "\\def[",
+                  "\\USE[", "\\use[",
+                  "\\PARAB", "\\parab",
+                  "\\PARAE", "\\parae",
+                  "]", "#", "*", "+", "\\\\", "\\",
+                  "[", "(", ")", "![", "=",
+                  )
   }
 }
