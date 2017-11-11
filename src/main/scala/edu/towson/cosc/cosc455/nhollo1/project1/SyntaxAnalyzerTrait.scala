@@ -2,7 +2,7 @@ package edu.towson.cosc.cosc455.nhollo1.project1
 
 /**
   * Created by Nashia Holloway
-  * COSC455 Project 1
+  * COSC455-Project 1
   * 11/14/17
   */
 
