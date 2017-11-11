@@ -8,12 +8,43 @@ import scala.collection.mutable //for parse tree stack
 
 class SemanticAnalyzer {
 
+  var varName = new mutable.Queue[String]()
+  var varDefinit = new mutable.Queue[String]()    // < ^ easier way to add and remove variable names and definitions to the "Symbol Table"
+  var stack: mutable.Stack[String] = mutable.Stack[String]()
+  var count: Int = 0
+  var range: Int = 0
+
+
+
+  def outputHTML(): Unit = {
+    
+  }
+
+  /**
+    * Hack Scala/Java function to take a
+    * String filename and open in default web browser.
+    * @param htmlFileStr
+    */
+  def openHTMLFileInBrowser(htmlFileStr : String): Unit = {
+    val file : File = new File(htmlFileStr.trim)
+    println(file.getAbsolutePath)
+    if (!file.exists())
+      sys.error("File " + htmlFileStr + " does not exist.")
+
+    try {
+      Desktop.getDesktop.browse(file.toURI)
+    }
+    catch {
+      case ioe: IOException => sys.error("Failed to open file:  " + htmlFileStr)
+      case e: Exception => sys.error("He's dead, Jim!")
+    }
+  }
 
 }
   /*
   //declare variables/values
-  var parseTree: mutable.Stack[String] = mutable.Stack[String]()
-  var outputTree: mutable.Stack[String] = mutable.Stack[String]()
+  var parseTree: mutable.stack[String] = mutable.stack[String]()
+  var outputTree: mutable.stack[String] = mutable.stack[String]()
   var temp: String = ""
   var next: String = ""
   var varName = new Array[String](10)

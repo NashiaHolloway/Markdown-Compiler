@@ -23,6 +23,7 @@ object CONSTANTS {
   val TEXT          : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_|"
   val HTH_TEXT      : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_|"
   val SPEC          : String = "\\#*[!]+()="
+  val MISC          : String = ",.;'-_|"
 
 
 }

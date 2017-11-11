@@ -28,6 +28,7 @@ object Compiler {
     //pass the string to the lexical analyzer!
     Scanner.getNextToken()
     Parser.gittex()
+    SemanticAnalyzer.outputHTML()
 
     /*USED TO TEST LEXICAL ANALYZER
     while(fileContents != ""){
