@@ -2,202 +2,204 @@ package edu.towson.cosc.cosc455.nhollo1.project1
 
 import scala.collection.mutable.ArrayBuffer //for ArrayBuffer
 
+
 class LexicalAnalyzer extends LexicalAnalyzerTrait {
 
-  //declare values/variables
   var nextChar: Char = ' '
-  var lookupList : List[String] = List()
-  var source: String = ""
-  var token = new ArrayBuffer[Char](50) //resizable
-  var filePos: Int = -1 //file position
-  var length: Int = 0
+  var token: String = ""
+  var text: String = ""
+  var filePos: Int = 0
+  val end: Array[Char] = Array ('\r', '\t', ' ', '\n')
+  val importantTokens : List[String] = List(CONSTANTS.DOC_BEGIN, CONSTANTS.DOC_END, CONSTANTS.TITLE, CONSTANTS.BRACK_END,
+    CONSTANTS.HEAD, CONSTANTS.PARA_BEGIN, CONSTANTS.PARA_END, CONSTANTS.BOLD, CONSTANTS.UL,
+    CONSTANTS.NEW_LINE, CONSTANTS.LINK_BEGIN, CONSTANTS.PAREN_BEGIN, CONSTANTS.PAREN_END, CONSTANTS.IMG, CONSTANTS.DEF,
+    CONSTANTS.EQUALS, CONSTANTS.USE)
 
   /**
-    * Starter method
-    * Don't really need, but makes my life easier
-    * @param file1
-    */
-  def start(file1: String): Unit = {
-    initializeLookup()
-    source = file1
-    getChar()
-    getNextToken()
-  }
-
-  /**
-    * Called from the getNextToken method to grab new character
+    * Method to add char to token string
     */
   override def addChar(): Unit = {
     token += nextChar
-    length += 1
   }
 
   /**
-    * Get the next character
+    * Method to get next char, if not at the end of the file.  Increments file position.
     */
   override def getChar(): Unit = {
-    if(filePos < source.length - 1){
+    if(filePos < Compiler.fileLength){
+      nextChar = Compiler.fileContents.charAt(filePos)
       filePos += 1
-      nextChar = source.charAt(filePos)
-
-    }
-    else {
-
     }
   }
 
   /**
-    * Gets the next token.
+    * Method to get next token
     */
   override def getNextToken(): Unit = {
+    clearToken() //initialize token string
+    getChar()
+    getNotText()
 
-    if(isSpace(nextChar)){
-      getNonBlank()
-    }
     if(nextChar.equals('[') || nextChar.equals(']') || nextChar.equals('(') || nextChar.equals(')') || nextChar.equals('!')
       || nextChar.equals('#') || nextChar.equals('\\') || nextChar.equals('*') || nextChar.equals('+') || nextChar.equals('=')){
-      if(nextChar.equals('\\')){
+      if(nextChar.equals('*')){
         addChar()
         getChar()
-        while(!isSpace(nextChar) && !nextChar.equals('[')){
+      }
+      else if(nextChar.equals(')')){
+        addChar()
+        getChar()
+      }
+      else if(nextChar.equals('+')){
+        addChar()
+        token += textEnder() //adds text until end, excluding spaces between words, end of lines, and end of tokens
+      }
+      else if(nextChar.equals('\\')){ //for \BEGIN, \END, \TITLE[, etc.
+        addChar()
+        token += textEnder()
+        if(nextChar.equals(CONSTANTS.NEW_LINE.charAt(1))){
           addChar()
-          getChar()
+          Compiler.currentToken = token
+          filePos += 1
+          return
         }
         if(nextChar.equals('[')){
           addChar()
-          getChar()
+          Compiler.currentToken = token
+          return
+        }
+        if(nextChar.equals(']')){
+          addChar()
+        }
+        if(CONSTANTS.DOC_END.contains(token.toUpperCase)){
+          getNotText()
+          if(filePos - Compiler.fileLength != 0){
+            filePos -= 1
+            getNextToken()
+            println("There shouldn't be anything after \\END")
+            System.exit(1)
+          }
         }
       }
-      //for Image
+      else if(nextChar.equals('#')){
+        addChar()
+        token += textEnder()
+      }
       else if(nextChar.equals('!')){
         addChar()
         getChar()
         if(nextChar.equals('[')){
           addChar()
-          getChar()
+          if(lookup()){ //if it passes lookup, set token
+            Compiler.currentToken = token
+          }
         }
       }
-      else {
+      else if(nextChar.equals('[') || nextChar.equals(']') || nextChar.equals('(') || nextChar.equals(')') || nextChar.equals('!')
+        || nextChar.equals('#') || nextChar.equals('\\') || nextChar.equals('*') || nextChar.equals('+') || nextChar.equals('=')){
         addChar()
-        getChar()
       }
-      wrap()
-    }
-    else if(!isSpace(nextChar)){
-      while(isText(nextChar.toString)){
-        addChar()
-        getChar()
+      //to get rid if \n, \t at the end of token in order for it to pass lookup
+      if(token.endsWith("\n") || token.endsWith("\t")){
+        token = token.substring(0, token.length - 1)
       }
-      Compiler.currentToken = token.mkString
-    }
-    else {
-      println("Can't find next token")
-    }
-    token.clear()
-  }
-
-  /**
-    * Packages the new token if lookup() is passed
-    */
-  def wrap(): Unit = {
-    var newT: String = token.mkString
-    if(lookup(newT)){
-      Compiler.currentToken = newT
-      //token.clear()
-    }
-  }
-
-  /**
-    * If the token is legal, return true, else return false
-    * @return
-    */
-  override def lookup(newT: String): Boolean = {
-    if(!lookupList.contains(newT)){
-      println("LEXICAL ERROR: The lexical token is incorrect, " + newT + " was found.")
-      System.exit(1)
-      return false
-    }
-    true
-  }
-
-  /**
-    * Called in wrap()
-    * Used to set currentToken in compiler to next
-    * @param currentToken
-    */
-  def setCurrent(currentToken: String): Unit = {
-    Compiler.currentToken = currentToken
-  }
-
-  /**
-    * Returns true or false if ii is text or not.
-    * You can have whitespace in text.
-    * @param text
-    * @return
-    */
-  def isText(text: String): Boolean = {
-    text match {
-      case "\\" => false
-      case "#" => false
-      case "!" => false
-      case "*" => false
-      case "=" => false
-      case "+" => false
-      case "[" => false
-      case "]" => false
-      case "(" => false
-      case ")" => false
-      case _ => true
-    }
-  }
-
-  /**
-    * Method to get tokens that aren't text
-    */
-  def getNotText(): Unit = {
-    while (nextChar.equals(' ') || nextChar.equals('\r') || nextChar.equals('\n') || nextChar.equals('\t')) {
-      getChar()
-      if (Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)) {
-        getChar()
+      if(lookup()){
+        Compiler.currentToken = token
         return
       }
+      else {
+        println("LEXICAL ERROR: The lexical token is incorrect, " + token + " was found.")
+        System.exit(1)
+      }
+    }
+    else if(isText(nextChar)){
+      addChar()
+      token += textEnder()
+      if(nextChar.equals(']') || nextChar.toString.equals(CONSTANTS.PARA_END) || nextChar.equals('=')
+        || nextChar.equals('\\') || nextChar.equals(')')){
+        filePos -= 1
+      }
+      Compiler.currentToken = token
     }
   }
 
   /**
-    * Determines if the current character is a space
-    * @param c
+    * Returns true if token is in list of important constants, AKA \BEGIN, \END, etc.
+    * Returns false if not.
     * @return
     */
-  def isSpace(c: Char): Boolean = {
-    if(c == ' ' || c == '\n' || c == '\r' || c == '\b' || c == '\t' || c == '\f'){
+  override def lookup(): Boolean = {
+    if(importantTokens.contains(token.toUpperCase)){
       true
     }
-    else false
+    else {
+      false
+    }
   }
 
   /**
-    * Method to get non-blanks.  Called from start()
+    * Helper method to get rid of lest token in preparation for the next
     */
-  def getNonBlank(): Unit = {
-    while(isSpace(nextChar)){
+  def clearToken(): Unit = {
+    token = ""
+  }
+
+  /**
+    * Helper method to get characters while nextChar isn't text
+    */
+  def getNotText(): Unit = {
+    while (nextChar.equals(' ') || nextChar.equals('\r') || nextChar.equals('\n') || nextChar.equals('\t') && filePos < Compiler.fileLength) {
       getChar()
     }
   }
 
   /**
-    * Method called from start() to initialize the list used in getNextToken() to make sure token is valid.
+    * Reference to Ender's game, except it's not a game.... I'm stressed and have overdosed on RedBull.  I can't feel my fingers.
     */
-  def initializeLookup(): Unit = {
-    lookupList = List("\\BEGIN", "\\begin",
-                  "\\END", "\\end",
-                  "\\TITLE[", "\\title[",
-                  "\\DEF[", "\\def[",
-                  "\\USE[", "\\use[",
-                  "\\PARAB", "\\parab",
-                  "\\PARAE", "\\parae",
-                  "]", "#", "*", "+", "\\\\", "\\",
-                  "[", "(", ")", "![", "=",
-                  )
+  def textEnder(): String = {
+    text = "" //initialize text string
+    getChar()
+    while(filePos < Compiler.fileLength && !end.contains(nextChar) && !CONSTANTS.SPEC.contains(nextChar)){
+      text += nextChar //add nextChar to text string
+      getChar()
+    }
+    if(nextChar.equals('\n')){
+      text += nextChar
+    }
+    if(nextChar.equals('\r')){
+      getChar()
+      if(nextChar.equals('\t')){
+        text += nextChar
+      }
+    }
+    else {
+
+    }
+    return text
+  }
+
+  /**
+    * Method to return true if text, and false if not
+    * @param nextChar
+    * @return
+    */
+  def isText(nextChar: Char): Boolean = {
+    nextChar match {
+      case '\\' => false
+      case '#' => false
+      case '!' => false
+      case '*' => false
+      case '=' => false
+      case '+' => false
+      case '[' => false
+      case ']' => false
+      case '(' => false
+      case ')' => false
+      case '\n' => false
+      case '\t' => false
+      case '\b' => false
+      case ' ' => false
+      case _ => true
+    }
   }
 }

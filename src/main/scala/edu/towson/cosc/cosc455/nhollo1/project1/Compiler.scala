@@ -14,6 +14,8 @@ object Compiler {
   val Parser = new SyntaxAnalyzer
   val SemanticAnalyzer = new SemanticAnalyzer
 
+  var fileLength: Int = -1
+
   def main(args: Array[String]): Unit = {
     //initialize filename
     file = args(0)
@@ -22,29 +24,21 @@ object Compiler {
     checkFile(args)
     readFile(args(0))
 
+    fileLength = fileContents.length
     //pass the string to the lexical analyzer!
-    //Scanner.start(fileContents)
+    Scanner.getNextToken()
+    Parser.gittex()
 
+    /*USED TO TEST LEXICAL ANALYZER
     while(fileContents != ""){
       println(currentToken)
-      Scanner.start(fileContents)
+      Scanner.getNextToken()
     }
     println(currentToken)
-  }
+    */
 
-    /*
 
-    //run through while loop until the file is empty
-    while(Scanner.filePos < Scanner.fileSize && !end){
-      Scanner.getNextToken() //get token, check lexicals
-      Parser.gittex()        //check syntax
-      if(currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
-        end = true
-      }
-    }
-    SemanticAnalyzer.semantics() //check semantics and open HTML webpage
   }
-  */
 
   def readFile(File : String): Unit = {
     val source = scala.io.Source.fromFile(File)

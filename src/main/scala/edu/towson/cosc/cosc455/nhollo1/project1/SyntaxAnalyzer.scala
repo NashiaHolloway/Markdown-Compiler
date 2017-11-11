@@ -4,6 +4,7 @@ import scala.collection.mutable
 
 class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
 
+
   var parse: mutable.Stack[String] = mutable.Stack[String]() //to add to stack "parse.push()"
 
   //For errors and helper methods
@@ -120,7 +121,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
     else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
       //setError() //returns true (replace with "found = true"?)
     }
-    else if(Compiler.Scanner.isText(Compiler.currentToken)){
+    else if(Compiler.Scanner.isText(Compiler.currentToken.toCharArray)){
       hth_text()
       none_or_more()
     }
@@ -297,6 +298,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
   /**
     * DOC_END     ::= '\END'              //required
     */
+
   def doc_end(): Unit = {
     if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
       parse.push(CONSTANTS.DOC_END)
@@ -313,6 +315,7 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
       System.exit(1)
     }
   }
+
 
   /**
     * TITLE       ::= '\TITLE['            //required
@@ -536,4 +539,5 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
 
     }
   }
+
 }

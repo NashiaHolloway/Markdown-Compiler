@@ -7,6 +7,10 @@ import scala.collection.mutable //for parse tree stack
 
 
 class SemanticAnalyzer {
+
+
+}
+  /*
   //declare variables/values
   var parseTree: mutable.Stack[String] = mutable.Stack[String]()
   var outputTree: mutable.Stack[String] = mutable.Stack[String]()
@@ -181,4 +185,7 @@ class SemanticAnalyzer {
       case e: Exception => sys.error("He's dead, Jim!")
     }
   }
-}
+
+}*/
+*/
+
