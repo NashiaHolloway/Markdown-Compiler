@@ -1,13 +1,15 @@
 package edu.towson.cosc.cosc455.nhollo1.project1
 
-import scala.collection.mutable.ArrayBuffer //for ArrayBuffer
-
+/**
+  * Created by Nashia Holloway
+  * COSC455 Project 1
+  * 11/14/17
+  */
 
 class LexicalAnalyzer extends LexicalAnalyzerTrait {
 
   var nextChar: Char = ' '
   var token: String = ""
-  var text: String = ""
   var filePos: Int = 0
   val end: Array[Char] = Array ('\r', '\t', ' ', '\n')
   val importantTokens : List[String] = List(CONSTANTS.DOC_BEGIN, CONSTANTS.DOC_END, CONSTANTS.TITLE, CONSTANTS.BRACK_END,
@@ -71,10 +73,10 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
         if(nextChar.equals(']')){
           addChar()
         }
-        if(CONSTANTS.DOC_END.contains(token.toUpperCase)){
+        if(CONSTANTS.DOC_END.contains(token.toUpperCase())){
           getNotText()
           if(filePos - Compiler.fileLength != 0){
-            filePos -= 1
+            filePos = filePos - 1
             getNextToken()
             println("There shouldn't be anything after \\END")
             System.exit(1)
@@ -129,7 +131,7 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     * @return
     */
   override def lookup(): Boolean = {
-    if(importantTokens.contains(token.toUpperCase)){
+    if(importantTokens.contains(token.toUpperCase())){
       true
     }
     else {
@@ -148,7 +150,7 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     * Helper method to get characters while nextChar isn't text
     */
   def getNotText(): Unit = {
-    while (nextChar.equals(' ') || nextChar.equals('\r') || nextChar.equals('\n') || nextChar.equals('\t') && filePos < Compiler.fileLength) {
+    while ((nextChar.equals(' ') || nextChar.equals('\r') || nextChar.equals('\n') || nextChar.equals('\t')) && (filePos < Compiler.fileLength)) {
       getChar()
     }
   }
@@ -157,7 +159,7 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
     * Reference to Ender's game, except it's not a game.... I'm stressed and have overdosed on RedBull.  I can't feel my fingers.
     */
   def textEnder(): String = {
-    text = "" //initialize text string
+    var text: String = "" //initialize text string
     getChar()
     while(filePos < Compiler.fileLength && !end.contains(nextChar) && !CONSTANTS.SPEC.contains(nextChar)){
       text += nextChar //add nextChar to text string

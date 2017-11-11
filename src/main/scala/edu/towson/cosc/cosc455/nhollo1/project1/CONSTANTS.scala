@@ -1,6 +1,10 @@
 package edu.towson.cosc.cosc455.nhollo1.project1
 
-import scala.collection.mutable.ListBuffer
+/**
+  * Created by Nashia Holloway
+  * COSC455 Project 1
+  * 11/14/17
+  */
 
 object CONSTANTS {
   val DOC_BEGIN     : String = 	"\\BEGIN"
@@ -24,6 +28,5 @@ object CONSTANTS {
   val HTH_TEXT      : String = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,.;'-_|"
   val SPEC          : String = "\\#*[!]+()="
   val MISC          : String = ",.;'-_|"
-
 
 }

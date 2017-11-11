@@ -1,201 +1,194 @@
 package edu.towson.cosc.cosc455.nhollo1.project1
 
+/**
+  * Created by Nashia Holloway
+  * COSC455 Project 1
+  * 11/14/17
+  */
+
 import java.awt.Desktop
 import java.io.{File, IOException}
 import java.io._
-import scala.collection.mutable //for parse tree stack
+import scala.collection.mutable //for stack
 
 
 class SemanticAnalyzer {
 
-  var varName = new mutable.Queue[String]()
-  var varDefinit = new mutable.Queue[String]()    // < ^ easier way to add and remove variable names and definitions to the "Symbol Table"
-  var stack: mutable.Stack[String] = mutable.Stack[String]()
   var count: Int = 0
   var range: Int = 0
+  var varName = new mutable.Queue[String]()
+  var varDefninit = new mutable.Queue[String]()  //< ^ easier to add and delete from the "Symbol Table"
+  var stack = new mutable.Stack[String]()
 
-
-
-  def outputHTML(): Unit = {
-    
-  }
-
-  /**
-    * Hack Scala/Java function to take a
-    * String filename and open in default web browser.
-    * @param htmlFileStr
-    */
-  def openHTMLFileInBrowser(htmlFileStr : String): Unit = {
-    val file : File = new File(htmlFileStr.trim)
-    println(file.getAbsolutePath)
-    if (!file.exists())
-      sys.error("File " + htmlFileStr + " does not exist.")
-
-    try {
-      Desktop.getDesktop.browse(file.toURI)
-    }
-    catch {
-      case ioe: IOException => sys.error("Failed to open file:  " + htmlFileStr)
-      case e: Exception => sys.error("He's dead, Jim!")
-    }
-  }
-
-}
-  /*
-  //declare variables/values
-  var parseTree: mutable.stack[String] = mutable.stack[String]()
-  var outputTree: mutable.stack[String] = mutable.stack[String]()
-  var temp: String = ""
-  var next: String = ""
-  var varName = new Array[String](10)
-  var varDefinit = new Array[String](10)
-  var count: Int = 0
-  var printed: Boolean = false
+  var linkText: String = ""
+  var link: String = ""
 
   /**
-    * Starter method
-    */
-  def semantics(): Unit = {
-    //prep
-    parseTree = Compiler.Parser.parse.reverse
-    next = parseTree.pop()
-
-    //method to process the file
-    outputHTML()
-  }
-
-  /**
-    * Translates the input file to HTML text
+    * Translates gittex language, that has passes the lexical and syntax analyzers, into HTML
     */
   def outputHTML(): Unit = {
-    while(!parseTree.isEmpty){
-      next match {
-        case CONSTANTS.DOC_BEGIN =>           //\BEGIN
-          outputTree.push("<html>")
-          next = parseTree.pop()
+    val file = new PrintWriter(new File("outputHTML.html"))
+    //push parse tree from syntax analyzer into stack for translation
+    for(c <- Compiler.Parser.parse){
+      stack.push(c)
+    }
+    while(stack.nonEmpty){
+      var currentToken: String = stack.pop()
+      currentToken.toUpperCase() match {
 
-        case CONSTANTS.TITLE =>               //\TITLE[
-          outputTree.push("<head>")
-          outputTree.push("<title>")
-          outputTree.push(parseTree.pop())
-          outputTree.push("</title>")
-          outputTree.push("</head>")
-          parseTree.pop()
-          next = parseTree.pop()
+        /**
+          * DOC_BEGIN   ::= <html>
+          *   DOC_END   ::= </html>
+          */
+        case CONSTANTS.DOC_BEGIN => file.append("<html>\n")
+        case CONSTANTS.DOC_END => file.append("\n</html>")
 
-        case CONSTANTS.HEAD =>                //#
-          outputTree.push("<h1>")
-          outputTree.push(parseTree.pop())
-          outputTree.push("</h1>")
-          next = parseTree.pop()
+        /**
+          * TITLE   ::= <head><title>has to have text</title></head>
+          */
+        case CONSTANTS.TITLE => file.append("<head>\n<title> ")
+          currentToken = stack.pop()
+          //have to get text and end bracket for \TITLE[
+          while(!currentToken.equalsIgnoreCase(CONSTANTS.BRACK_END)){
+            file.append(currentToken + " ") //space for text
+            currentToken = stack.pop()
+          }
+          file.append(" </title>\n</head>\n")
 
-        case CONSTANTS.PARA_BEGIN =>          //\PARB
-          outputTree.push("<p>")
-          parseTree.pop()
+        /**
+          * HEAD    ::= <h1>has to have text</h1>
+          */
+        case CONSTANTS.HEAD => file.append("<h1> ")
+          currentToken = stack.pop()
+          //have to get text for \HEAD, until current token is an "important token"
+          while(!Compiler.Scanner.importantTokens.contains(currentToken)){
+            file.append(currentToken + " ")
+            currentToken = stack.pop()
+          }
+          stack.push(currentToken)
+          file.append(" </h1>\n")
 
-        case CONSTANTS.PAREN_END =>           //\PARE
-          outputTree.push("</p>")
-          next = parseTree.pop()
+        /**
+          * PARA_BEGIN    ::= <p>
+          *   PARA_END    ::= </p>
+          */
+        case CONSTANTS.PARA_BEGIN => file.append("<p> ")
+          range = 1
+        case CONSTANTS.PARA_END => file.append(" </p>\n")
+          if(range == 1 && count > 0){
+            for(c <- 0 until count){
+              varName.dequeue()
+            }
+          }
 
-        case CONSTANTS.BOLD => //*
-          outputTree.push("<b>")
-          outputTree.push(parseTree.pop())
-          outputTree.push("</b>")
-          parseTree.pop()
-          next = parseTree.pop()
+        /**
+          * LINK_BEGIN    ::= <a href="some text">has to have text</a>
+          */
+        case CONSTANTS.LINK_BEGIN =>
+          linkText = ""
+          link = ""
+          currentToken = stack.pop()
+          while(!currentToken.equals(CONSTANTS.BRACK_END)){
+            linkText = linkText + currentToken + " "
+            currentToken = stack.pop()
+          }
+          stack.pop()
+          link += stack.pop()
+          stack.pop()
+          file.append("<a href=\"" + link + "\">" + linkText + "</a> ")
 
-        case CONSTANTS.UL =>                  //+
-          outputTree.push("<li>")
-          next = parseTree.pop()
-          if (next.contains("\n") && !parseTree.isEmpty && !next.equalsIgnoreCase(CONSTANTS.DOC_END))
-            outputTree.push(next)
-          else if (!next.equalsIgnoreCase(CONSTANTS.DOC_END))
-            outputHTML()
-          outputTree.push("</li>")
-          if(!parseTree.isEmpty)
-            next = parseTree.pop()
-
-        case CONSTANTS.NEW_LINE =>            //\\
-          outputTree.push("<br>")
-          next = parseTree.pop()
-
-        case CONSTANTS.LINK_BEGIN =>          //[
-          val temp = parseTree.pop()
-          parseTree.pop()
-          parseTree.pop()
-          next = parseTree.pop()
-          parseTree.pop()
-
-          outputTree.push("<a href = \"")
-          outputTree.push(next)
-          outputTree.push("\">")
-          outputTree.push(temp)
-          outputTree.push("<a/>")
-          next = parseTree.pop()
-
-        case CONSTANTS.IMG =>                 //![
-          val temp = parseTree.pop()
-          parseTree.pop()
-          parseTree.pop()
-          next = parseTree.pop()
-          parseTree.pop()
-
-          outputTree.push("<img src =\"")
-          outputTree.push(next)
-          outputTree.push(temp)
-          outputTree.push("\">")
-          next = parseTree.pop()
-
-        case CONSTANTS.DEF =>                //\DEF[
-          var name = parseTree.pop()
-          parseTree.pop()
-          val definit = parseTree.pop()
-          parseTree.pop()
-          name = name.filter(!" ".contains(_))
-          val defined = varName.indexOf(name)
-          if(defined != -1) {
-            varName(defined) = name
-            varDefinit(defined) = definit
+        /**
+          * UL    ::= <li> can be USE, BOLD, LINK, or text</li>
+          */
+        case CONSTANTS.UL => file.append("\n<li> ")
+          currentToken = stack.pop()
+          if(currentToken.contains("\n")){
+            file.append(currentToken + " </li>")
+          }
+          else if(currentToken.equalsIgnoreCase(CONSTANTS.USE)){
+            stack.push(currentToken)
           }
           else {
-            varName(count) = name
-            varDefinit(count) = definit
+            if(!currentToken.equalsIgnoreCase(CONSTANTS.USE)){
+              file.append(currentToken + " ")
+              currentToken = stack.top
+              if(currentToken.contains("\n")){
+                currentToken = stack.pop()
+                file.append(currentToken + " </li>")
+              }
+            }
+          }
+
+        /**
+          * NEW_LINE    ::= <br>
+          */
+        case CONSTANTS.NEW_LINE => file.append("<br>\n")
+
+        /**
+          * IMG   ::= <img src="some text" alt="some more text">
+          */
+        case CONSTANTS.IMG =>
+          linkText = ""
+          link = ""
+          currentToken = stack.pop()
+          while(!currentToken.equals(CONSTANTS.BRACK_END)){
+            linkText = linkText + currentToken + " "
+            currentToken = stack.pop()
+          }
+          stack.pop()
+          link += stack.pop()
+          stack.pop()
+          file.append("<img src=\"" + link + "\" alt=" + linkText + "\">")
+
+        /**
+          * BOLD    ::= <b>has to have text</b>
+          */
+        case CONSTANTS.BOLD =>
+          var boldText: String = ""
+          currentToken = stack.pop()
+          while(!currentToken.equals(CONSTANTS.BOLD)){
+            boldText += currentToken
+            currentToken = stack.pop()
+          }
+          file.append("<b> " + boldText + " </b>")
+
+        /**
+          * DEF   ::= add and delete variables from queue here
+          */
+        case CONSTANTS.DEF =>
+          varName.enqueue(stack.pop())
+          stack.pop()
+          varDefninit.enqueue(stack.pop())
+          stack.pop()
+          if(range == 1){
             count += 1
           }
-          next = parseTree.pop() //if nothing to push, pop
 
-        case CONSTANTS.USE =>               //\USE[
-          var name = parseTree.pop()
-          parseTree.pop()
-          name = name.filter(!" ".contains(_))
-          if(varName.contains(name))
-            outputTree.push(varDefinit(varName.indexOf(name)))
-          else{
-            println("Static Symantic Error: Variable has not been defined!")
+        /**
+          * USE   ::= only use variables that were previously defined here
+          * Throw a semantic error, if variables were used and not defined.
+          */
+        case CONSTANTS.USE =>
+          var useDefVar: String = stack.pop()
+          if(varName.contains(useDefVar)){
+            file.append(varDefninit(varName.indexOf(useDefVar, range)) + " ")
+          }
+          else {
+            println("STATIC SEMANTIC ERROR: " + useDefVar + " was never defined.")
             System.exit(1)
           }
-          next = parseTree.pop()
+          stack.pop()
 
-        case CONSTANTS.DOC_END =>           //\END
-          outputTree.push("</html>")
-
-        case _ =>
-          outputTree.push(next)
-          next = parseTree.pop()
-      }
-      //Prints output to file
-      val out = outputTree.reverse.mkString
-      val print = new PrintWriter(new File(Compiler.fileContents + ".html"))
-      print.write(out)
-      print.close()
-
-      //open HTML
-      if(!printed){
-        openHTMLFileInBrowser(Compiler.fileContents + ".html")
-        printed = true
+        /**
+          * For text, basically
+          */
+        case _ => file.append(currentToken + " ")
       }
     }
+    file.close() //end file
+    openHTMLFileInBrowser("outputHTML.html") //open webpage!!!
   }
+
 
   /**
     * Hack Scala/Java function to take a
@@ -216,7 +209,6 @@ class SemanticAnalyzer {
       case e: Exception => sys.error("He's dead, Jim!")
     }
   }
+}
 
-}*/
-*/
 
