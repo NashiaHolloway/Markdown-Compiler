@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: edu.towson.cosc.cosc455.nhollo1.project1.Compiler
-
