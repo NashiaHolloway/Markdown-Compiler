@@ -6,7 +6,202 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
 
 
   var parse: mutable.Stack[String] = mutable.Stack[String]() //to add to stack "parse.push()"
+  var checkIt: Boolean = false
 
+  /**
+    * <gittex>  ::= DOC_BEGIN <var_def> <title> <body> DOC_END
+    */
+  override def gittex(): Unit = {
+    docbHelper()
+    var_def()
+    title()
+    body()
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)){
+      parse.push(Compiler.currentToken)
+    }
+    else{
+      println("SYNTAX ERROR: \\END expected, when " + Compiler.currentToken + " was found.")
+      System.exit(1)
+    }
+  }
+
+  /**
+    * <para>      ::= PARB <var_def> <inner> PARE
+    */
+  override def para(): Unit = {
+    parabHelper()
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DEF)){
+      var_def()
+    }
+    inner()
+    paraeHelper()
+  }
+
+  override def none_or_more(): Unit = ???
+
+  override def inner(): Unit = {
+
+  }
+
+  override def link(): Unit = ???
+
+  /**
+    * OPTIONAL
+    * <body>  ::= <inner> <body>
+    *         | <para> <body>
+    *         | <new_line> <body>
+    *         | ε
+    */
+  override def body(): Unit = {
+    if(Compiler.fileLength == Compiler.Scanner.filePos){
+      //do nothing
+    }
+    else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_BEGIN) || Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
+      para()
+      body()
+    }
+    else if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.NEW_LINE)){
+      new_line()
+      body()
+    }
+    else {
+      inner()
+      body()
+    }
+  }
+
+  override def bold(): Unit = ???
+
+  override def new_line(): Unit = ???
+
+  /**
+    * NOT OPTIONAL
+    * <title>     ::= TITLE HTH_TEXT BRACK_END
+    */
+  override def title(): Unit = {
+    titleHelper()
+    hth_text()
+    brackeHelper()
+  }
+
+  override def var_def(): Unit = ???
+
+  override def var_use(): Unit = ???
+
+  override def img(): Unit = ???
+
+  override def head(): Unit = ???
+
+  override def ul(): Unit = ???
+
+  /*
+    Not a part of SyntaxAnalyzerTrait, but still needed
+   */
+  /**
+    * DOC_BEGIN   ::= '\BEGIN'            //required
+    */
+  def docbHelper(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.DOC_BEGIN)){
+      parse.push(CONSTANTS.DOC_BEGIN)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      println("SYNTAX ERROR: \\BEGIN was expected when '" + Compiler.currentToken + "' was found.")
+      System.exit(1)
+    }
+  }
+
+  /**
+    * TITLE       ::= '\TITLE['            //required
+    */
+  def titleHelper(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.TITLE)) {
+      parse.push(CONSTANTS.TITLE)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      print("SYNTAX ERROR: \\TITLE[ was expected when '" + Compiler.currentToken + "' was found." )
+      System.exit(1)
+    }
+  }
+
+  /**
+    * BRACK_END   ::= ']'
+    */
+  def brackeHelper(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.BRACK_END)){
+      parse.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      println("SYNTAX ERROR: ] needed for every [ given. " + Compiler.currentToken + " was found.")
+      System.exit(1)
+    }
+  }
+
+  /**
+    * PARA_BEGIN  ::= '\PARAB'
+    */
+  def parabHelper(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_BEGIN)){
+      parse.push(CONSTANTS.PARA_BEGIN)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      println("SYNTAX ERROR: \\PARAB was expected when '" + Compiler.currentToken + "' was found.")
+      System.exit(1)
+    }
+  }
+
+  /**
+    * PARA_END    ::= '\PARAE'
+    */
+  def paraeHelper(): Unit = {
+    if(Compiler.currentToken.equalsIgnoreCase(CONSTANTS.PARA_END)){
+      parse.push(CONSTANTS.PARA_END)
+      Compiler.Scanner.getNextToken()
+    }
+    else {
+      println("SYNTAX ERROR: \\PARAE was expected when '" + Compiler.currentToken + "' was found.")
+      System.exit(1)
+    }
+  }
+
+
+
+
+
+
+  /**
+    * HTH_TEXT    ::= Plain text
+    */
+  def hth_text(): Unit = {
+    if(isTextParser && !Compiler.currentToken.equals(CONSTANTS.SPEC)){
+      parse.push(Compiler.currentToken)
+      Compiler.Scanner.getNextToken()
+      hth_text()
+    }
+    else {
+      println("SYNTAX ERROR: Text was expected when '" + Compiler.currentToken + "' was found.")
+      System.exit(1)
+    }
+  }
+
+  def isTextParser: Boolean = {
+    checkIt = false
+    if(!Compiler.currentToken.equals(CONSTANTS.SPEC)){
+      if(!checkIt){
+        if(Compiler.currentToken.last == '\n'){
+          checkIt = Compiler.currentToken.substring(0, Compiler.currentToken.length - 1).last.isLetterOrDigit
+        }
+        else {
+          checkIt = Compiler.currentToken.last.isLetterOrDigit
+        }
+      }
+    }
+    checkIt
+  }
+  /*
   //For errors and helper methods
   var errorFound : Boolean = false
   def setError() = errorFound = true
@@ -539,5 +734,6 @@ class SyntaxAnalyzer extends SyntaxAnalyzerTrait {
 
     }
   }
+*/
 
 }
