@@ -51,9 +51,8 @@ This project has given me developmental experience in the following areas of pro
   > C:\> java -jar cosc455project1.jar Test2.gtx
   
   # NOTE
-  Copious amount of RedBull was consumed in the making of this project.  "Igne natura renovatur integra" translates from 
-  Latin to something like, "Through fire, nature is reborn whole."  I went through hell (not really) to complete ths project,
-  but I became a better programmer because of it.  
+  "Igne natura renovatur integra" translates from Latin to something like, "Through fire, nature is reborn whole."  
+  I went through hell (not really) to complete ths project, but I became a better programmer because of it.  
   
   
  
