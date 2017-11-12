@@ -78,7 +78,7 @@ class LexicalAnalyzer extends LexicalAnalyzerTrait {
           if(filePos - Compiler.fileLength != 0){
             filePos = filePos - 1
             getNextToken()
-            println("There shouldn't be anything after \\END")
+            println("ERROR: There shouldn't be anything after \\END")
             System.exit(1)
           }
         }
