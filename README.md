@@ -45,7 +45,7 @@ This project has given me developmental experience in the following areas of pro
  The final program takes one command-line argument provided by the user: an input file name in the Gittex Markdown language.
  All Gittex Markdown source files are required to have a gtx extension.  The compiler then generates an "executable" output 
  file with the same name but an html extension and be viewable in the Google Chrome 60+ browser.
- After downloading this project, open the Testing folder to gain access to the .jar file in order to run the compiler.
+ **After downloading this project, open the Testing folder to gain access to the .jar file in order to run the compiler.**
  
  **Example:**
   > C:\> java -jar cosc455project1.jar Test2.gtx
