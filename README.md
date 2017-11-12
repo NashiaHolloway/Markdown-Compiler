@@ -10,7 +10,8 @@ language tools (e.g., Scaladocs, Scala tests, ScalaCheck, etc.) and gained exper
 development.
 
 This project has given me developmental experience in the following areas of programming languages/concepts:
-  * Writing BNF/EBNF grammar rules * Lexical analysis
+  * Writing BNF/EBNF grammar rules 
+  * Lexical analysis
   * Syntactical analysis and parsing
   * Semantics
   * Static-scope analysis
