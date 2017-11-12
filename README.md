@@ -10,8 +10,7 @@ language tools (e.g., Scaladocs, Scala tests, ScalaCheck, etc.) and gained exper
 development.
 
 This project has given me developmental experience in the following areas of programming languages/concepts:
-  * Writing BNF/EBNF grammar rules
-  * Lexical analysis
+  * Writing BNF/EBNF grammar rules * Lexical analysis
   * Syntactical analysis and parsing
   * Semantics
   * Static-scope analysis
@@ -46,8 +45,9 @@ This project has given me developmental experience in the following areas of pro
  All Gittex Markdown source files are required to have a gtx extension.  The compiler then generates an "executable" output 
  file with the same name but an html extension and be viewable in the Google Chrome 60+ browser.
  After downloading this project, open the Testing folder to gain access to the .jar file in order to run the compiler.
- Example:
-  C:\> java -jar cosc455project1.jar Test2.gtx
+ 
+ **Example:**
+  > C:\> java -jar cosc455project1.jar Test2.gtx
   
   # NOTE
   Copious amount of RedBull was consumed in the making of this project.  "Igne natura renovatur integra" translates from 
