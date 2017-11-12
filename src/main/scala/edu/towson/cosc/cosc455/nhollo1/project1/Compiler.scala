@@ -51,8 +51,9 @@ object Compiler {
 
       //get tokens from lexical analyzer and check for syntax errors
       Parser.gittex()
+      //maybe don't really need...
       if (currentToken.equalsIgnoreCase(CONSTANTS.DOC_END)) {
-        //endCase = true
+
       }
     }
     //if lexical and syntactical analysis is passed, go to semantic analyzer for translation
