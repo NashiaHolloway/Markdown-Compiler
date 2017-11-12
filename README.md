@@ -10,23 +10,23 @@ language tools (e.g., Scaladocs, Scala tests, ScalaCheck, etc.) and gained exper
 development.
 
 This project has given me developmental experience in the following areas of programming languages/concepts:
-  Writing BNF/EBNF grammar rules
-  Lexical analysis
-  Syntactical analysis and parsing
-  Semantics
-  Static-scope analysis
+  * Writing BNF/EBNF grammar rules
+  * Lexical analysis
+  * Syntactical analysis and parsing
+  * Semantics
+  * Static-scope analysis
   
-  OOP design and development
-  Method invocation
-  Exception handling
-  Recursion
-  Configuration management
-  Unit testing
+  * OOP design and development
+  * Method invocation
+  * Exception handling
+  * Recursion
+  * Configuration management
+  * Unit testing
   
  # Description
  I have implemented a character by character lexical analyzer that partitions the lexemes of a source file in the
  Gittex Markdown language into tokens.  To do this, I extended the Lexical Analyzer Scala trait (similar to Java Interface).
- Any lexical errors encountered are repeorted as output to the console with as much error information as possible.
+ Any lexical errors encountered are reported as output to the console with as much error information as possible.
  The compiler will exit after the first error is encountered.  If an error is encountered, no output file will be created.
  
  Next, I implemented a recursive-descent parser (syntax analyzer) that builds an abstract syntax tree (parse tree). 
@@ -42,11 +42,18 @@ This project has given me developmental experience in the following areas of pro
  language — HTML5.
  
  # Execution
- The final program takes one command-line argument provided by the user: an inpus file name in the Gittex Markdown language.
+ The final program takes one command-line argument provided by the user: an input file name in the Gittex Markdown language.
  All Gittex Markdown source files are required to have a gtx extension.  The compiler then generates an "executable" output 
  file with the same name but an html extension and be viewable in the Google Chrome 60+ browser.
+ After downloading this project, open the Testing folder to gain access to the .jar file in order to run the compiler.
  Example:
-  C:\> java -jar compiler.jar Test1.gtx
+  C:\> java -jar cosc455project1.jar Test2.gtx
+  
+  # NOTE
+  Copious amount of RedBull was consumed in the making of this project.  "Igne natura renovatur integra" translates from 
+  Latin to something like, "Through fire, nature is reborn whole."  I went through hell (not really) to complete ths project,
+  but I became a better programmer because of it.  
+  
   
  
 
